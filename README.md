@@ -1,93 +1,92 @@
-[![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-22041afd0340ce965d47ae6ef1cefeee28c7c493a6346c4f15d667ab976d596c.svg)](https://classroom.github.com/a/KT4lxLyy)
-# Démarrage Flask SQLAlchemy (GitHub Classroom)
+# Flask + SQLAlchemy Exercise
 
-Ce dépôt est un **gabarit de départ** pour un devoir GitHub Classroom du Module
-5 Flask : Bases de données et ORM avec SQLAlchemy. Les étudiantes et étudiants
-connecteront SQLAlchemy à une application Flask, construiront des modèles et
-les relieront à des routes pour des opérations CRUD basiques.
+Ce dépôt est un gabarit pour un exercice Flask / SQLAlchemy — application minimale avec modèles `User` et `Post` et routes CRUD basiques.
 
-## Objectifs d'apprentissage
+## Installation
 
-- Configurer SQLAlchemy dans une application Flask (schéma factory recommandé).
-- Définir des modèles et relations (`User`, `Post`).
-- Réaliser des opérations CRUD avec les sessions SQLAlchemy.
-- Intégrer les modèles à des routes Flask qui renvoient du JSON.
-- (Optionnel) Utiliser Flask-Migrate pour gérer les évolutions du schéma.
-
-## Ce que vous devez faire
-
-Travaillez dans `app.py` et `models.py` pour terminer le devoir. Les tests
-décrivent le comportement attendu. En résumé :
-
-1. **Modèles (`models.py`)**
-   - Ajouter les colonnes requises à `User` et `Post`.
-   - Mettre en place une relation un-à-plusieurs : un `User` possède plusieurs
-     `Post`.
-   - Rendre `username` unique et obligatoire ; `Post.user_id` doit référencer
-     `users.id`.
-
-2. **Routes (`app.py`)**
-   - Implémenter `GET /users` pour lister les utilisateurs (tableau JSON).
-   - Implémenter `POST /users` pour créer un utilisateur à partir du JSON
-     fourni.
-   - Implémenter `GET /posts` pour lister les posts avec les informations de
-     l'auteur.
-   - Implémenter `POST /posts` pour créer un post lié à un utilisateur existant.
-   - Retourner des codes de statut adaptés (voir les tests pour les attentes).
-
-3. **(Optionnel) Migrations**
-   - Utiliser `flask db init/migrate/upgrade` si vous souhaitez vous exercer aux
-     migrations.
-
-## Structure du projet
+1. Créez un environnement virtuel (optionnel) et installez les dépendances:
 
 ```
-.
-├── app.py
-├── config.py
-├── models.py
-├── requirements.txt
-├── tests/
-│   ├── conftest.py
-│   ├── test_app_structure.py
-│   ├── test_models.py
-│   └── test_routes.py
-└── .github/workflows/autograding.yml
+python -m venv venv
+venv\Scripts\activate    # Windows
+pip install -r requirements.txt
 ```
 
-## Démarrage en local
+2. Lancer l'application (développement):
 
-1. Créez un environnement virtuel et installez les dépendances :
+```
+python app.py
+```
 
-   ```bash
-   python -m venv .venv
-   source .venv/bin/activate
-   pip install -r requirements.txt
-   ```
+L'application écoute par défaut sur `http://127.0.0.1:5000`.
 
-2. Lancez l'application Flask :
+## Endpoints API
 
-   ```bash
-   flask --app app run
-   ```
+Les routes principales exposées par l'application sont :
 
-   Ou exécutez `python app.py`.
+- `GET /users` — lister tous les utilisateurs (renvoie une liste JSON)
+- `POST /adduser` — créer un nouvel utilisateur (envoyer JSON)
+- `GET /posts` — lister tous les posts (inclut le `username` de l'auteur)
+- `POST /addpost` — créer un post lié à un utilisateur existant (valide `user_id`)
+- `GET /verify` — rapport détaillé des relations users/posts (diagnostic)
 
-3. Lancez les tests :
+### Ajouter un utilisateur (Add user)
 
-   ```bash
-   pytest
-   ```
+Utilisez `POST /users` pour créer un utilisateur avec JSON. Exemple :
 
-## Auto-évaluation avec GitHub Actions
+```
+curl -X POST http://127.0.0.1:5000/users \
+  -H "Content-Type: application/json" \
+  -d '{"username": "nouvel_util", "email": "nouvel@example.com"}'
+```
 
-GitHub Actions (voir `.github/workflows/autograding.yml`) installe les
-dépendances et exécute `pytest`. Utilisez-le comme guide dans GitHub Classroom :
-push vos modifications pour déclencher le workflow et consulter les retours.
+Réponse attendue (201 Created):
 
-## Conseils
+```json
+{
+  "id": 10,
+  "username": "nouvel_util",
+  "email": "nouvel@example.com"
+}
+```
 
-- Utilisez le shell Flask pour des essais rapides : `flask --app app shell`.
-- En test local, la base par défaut est `sqlite:///blog.db`.
-- Pendant les tests, la base tourne en mémoire (`sqlite:///:memory:`) pour
-  conserver l'isolation et la rapidité.
+### Ajouter un post (Add post)
+
+Utilisez `POST /posts` pour créer un post lié à un `user_id` existant. Exemple :
+
+```
+curl -X POST http://127.0.0.1:5000/posts \
+  -H "Content-Type: application/json" \
+  -d '{"title": "Mon titre", "content": "Le contenu", "user_id": 1}'
+```
+
+Réponse attendue (201 Created):
+
+```json
+{
+  "id": 5,
+  "title": "Mon titre",
+  "content": "Le contenu",
+  "user_id": 1,
+  "username": "alice"
+}
+```
+
+Si `user_id` ne référence pas un utilisateur existant, l'API retourne `400` avec un message d'erreur.
+
+## Tests
+
+Les tests sont fournis dans le dossier `tests/`. Pour exécuter les tests unitaires :
+
+```
+python -m pytest tests/ -v
+```
+
+Tous les tests devraient passer (`12 passed`).
+
+## Remarques
+
+- Pendant le développement, l'application peut pré-remplir des données d'exemple. Lors des tests, l'initialisation automatique est désactivée pour garantir un état propre.
+- Les routes CRUD exposées sont minimalistes et renvoient du JSON pour faciliter les tests.
+
+Si vous souhaitez que j'ajoute des exemples HTML de formulaires `adduser` / `addpost`, dites-le et je peux les ajouter.

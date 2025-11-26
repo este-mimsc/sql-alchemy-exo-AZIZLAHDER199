@@ -1,5 +1,5 @@
 """Minimal Flask application setup for the SQLAlchemy assignment."""
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request ,render_template , redirect , url_for
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 from models import User, Post
@@ -140,7 +140,93 @@ def create_app(test_config=None):
                 "username": new_user.username,
                 "email": new_user.email
             }), 201
+    @app.route("/users/<int:user_id>", methods=["GET"])
+    def get_user(user_id):
+        """Get a user by ID."""
+        user = db.session.get(User, user_id)
+        if not user:
+            return jsonify({"message": "User not found"}), 404
 
+        return jsonify({
+            "id": user.id,
+            "username": user.username,
+            "email": user.email,
+            "posts": [
+                {
+                    "id": post.id,
+                    "title": post.title,
+                    "content": post.content
+                }
+                for post in user.posts
+            ]
+        }), 200
+    
+    @app.route("/users/<int:user_id>/posts", methods=["GET"])
+    def get_user_posts(user_id):
+        """Get all posts for a specific user."""
+        user = db.session.get(User, user_id)
+        if not user:
+            return jsonify({"message": "User not found"}), 404
+
+        posts = [
+            {
+                "id": post.id,
+                "title": post.title,
+                "content": post.content
+            }
+            for post in user.posts
+        ]
+
+        return jsonify({
+            "user_id": user.id,
+            "username": user.username,
+            "posts": posts
+        }), 200
+    @app.route("/adduuser/", methods=["POST", "GET"])
+    def add_user():
+        """Add a new user."""
+        if request.method == "POST":
+
+            username = request.form.get("username")
+            email = request.form.get("email")
+
+            if not username:
+                return jsonify({"message": "Username is required"}), 400
+
+            new_user = User(username=username, email=email)
+            db.session.add(new_user)
+            db.session.commit()
+
+        return redirect(url_for('users'))
+    @app.route("/addposst/", methods=["POST", "GET"])
+    def add_post():
+        """Add a new post."""
+        if request.method == "POST":
+
+            title = request.form.get("title")
+            content = request.form.get("content")
+            user_id = request.form.get("user_id")
+
+            if not title or not content or not user_id:
+                return jsonify({"message": "Title, content, and user_id are required"}), 400
+
+            user = db.session.get(User, user_id)
+            if not user:
+                return jsonify({"message": "User not found"}), 400
+
+            new_post = Post(title=title, content=content, user_id=user_id)
+            db.session.add(new_post)
+            db.session.commit()
+
+        return redirect(url_for('users'))
+    @app.route("/adduser", methods=["POST", "GET"])
+    def adduser():
+        return render_template("adduser.html")
+    
+    @app.route("/addpost", methods=["POST", "GET"])
+    def addpost():
+        return render_template("addpost.html")
+    
 
     @app.route("/posts", methods=["GET", "POST"])
     def posts():
@@ -185,6 +271,8 @@ def create_app(test_config=None):
             }), 201
     
     return app
+
+
 
 
 # Expose a module-level application for convenience with certain tools
