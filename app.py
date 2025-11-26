@@ -1,14 +1,25 @@
 """Minimal Flask application setup for the SQLAlchemy assignment."""
+<<<<<<< HEAD
 from flask import Flask, jsonify, request ,render_template , redirect , url_for
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 from models import User, Post
+=======
+from flask import Flask, jsonify, request
+from flask_migrate import Migrate
+from flask_sqlalchemy import SQLAlchemy
+
+>>>>>>> 13d4e0b49c89a211ed69c57b7d44aa1c1316bff1
 from config import Config
 
 # These extension instances are shared across the app and models
 # so that SQLAlchemy can bind to the application context when the
 # factory runs.
+<<<<<<< HEAD
 from database import db
+=======
+db = SQLAlchemy()
+>>>>>>> 13d4e0b49c89a211ed69c57b7d44aa1c1316bff1
 migrate = Migrate()
 
 
@@ -31,6 +42,7 @@ def create_app(test_config=None):
     # or ``create_all`` run. Students will flesh these out in ``models.py``.
     import models  # noqa: F401
 
+<<<<<<< HEAD
     @app.shell_context_processor
     def make_shell_context():
         return {'db': db, 'User': User, 'Post': Post}
@@ -60,12 +72,15 @@ def create_app(test_config=None):
                 db.session.add_all([post1, post2, post3, post4])
                 db.session.commit()
 
+=======
+>>>>>>> 13d4e0b49c89a211ed69c57b7d44aa1c1316bff1
     @app.route("/")
     def index():
         """Simple sanity check route."""
 
         return jsonify({"message": "Welcome to the Flask + SQLAlchemy assignment"})
 
+<<<<<<< HEAD
     @app.route("/verify", methods=["GET"])
     def verify():
         """Verify foreign key relationships between User and Post."""
@@ -275,6 +290,37 @@ def create_app(test_config=None):
 
 
 
+=======
+    @app.route("/users", methods=["GET", "POST"])
+    def users():
+        """List or create users.
+
+        TODO: Students should query ``User`` objects, serialize them to JSON,
+        and handle incoming POST data to create new users.
+        """
+
+        return (
+            jsonify({"message": "TODO: implement user listing/creation"}),
+            501,
+        )
+
+    @app.route("/posts", methods=["GET", "POST"])
+    def posts():
+        """List or create posts.
+
+        TODO: Students should query ``Post`` objects, include user data, and
+        allow creating posts tied to a valid ``user_id``.
+        """
+
+        return (
+            jsonify({"message": "TODO: implement post listing/creation"}),
+            501,
+        )
+
+    return app
+
+
+>>>>>>> 13d4e0b49c89a211ed69c57b7d44aa1c1316bff1
 # Expose a module-level application for convenience with certain tools
 app = create_app()
 
