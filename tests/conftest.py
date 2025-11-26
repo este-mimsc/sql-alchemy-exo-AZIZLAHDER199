@@ -22,13 +22,7 @@ def app():
 
     with app.app_context():
         db.create_all()
-<<<<<<< HEAD
         yield app
-=======
-    yield app
-
-    with app.app_context():
->>>>>>> 13d4e0b49c89a211ed69c57b7d44aa1c1316bff1
         db.drop_all()
 
 
